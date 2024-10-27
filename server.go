@@ -26,19 +26,7 @@ func (s *Server) AddMiddleware(newMidleware midleware) {
 func (s *Server) AddRouter(endpoint string, endpointHandler EndpointHandler) {
 
 	var functionality = func(w http.ResponseWriter, r *http.Request) {
-		newW := w
-		newR := r
-
-		for _, midleware := range s.middlwares {
-			canContinue, affectedW, affectedR := midleware(newW, newR)
-			newW = affectedW
-			newR = affectedR
-			if !canContinue {
-				return
-			}
-		}
-
-		endpointHandler[r.Method](newW, newR)
+		endpointHandler[r.Method](w, r)
 	}
 
 	s.router[endpoint] = functionality
@@ -46,8 +34,25 @@ func (s *Server) AddRouter(endpoint string, endpointHandler EndpointHandler) {
 
 func (s *Server) Listen() {
 
-	for endpoint, handler := range s.router {
-		http.Handle(endpoint, handler)
+	for endpoint, endpointHandler := range s.router {
+
+		var fullHandler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+			newW := w
+			newR := r
+
+			for _, midleware := range s.middlwares {
+				canContinue, affectedW, affectedR := midleware(newW, newR)
+				newW = affectedW
+				newR = affectedR
+				if !canContinue {
+					return
+				}
+			}
+
+			endpointHandler(w, r)
+		}
+
+		http.Handle(endpoint, fullHandler)
 	}
 
 	fmt.Printf("\n SERVER LISTENING IN: %d \n\n", s.port)
