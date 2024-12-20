@@ -8,7 +8,7 @@ import (
 const MainEndpoint = "/"
 
 func MainEndpointHandler() EndpointHandler {
-	methods := make(EndpointHandler)
+	methods := EndpointHandler{}
 
 	methods["GET"] = func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("got %s request %s \n", MainEndpoint, r.Method)
