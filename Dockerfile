@@ -1,4 +1,4 @@
-FROM go-base:latest
+FROM golang:latest
 
 WORKDIR /app 
 
@@ -6,7 +6,7 @@ COPY . /app
 
 RUN go build
 
-CMD ["go", "run", "seran.dev"]
+CMD ["go", "run", "."]
 
 EXPOSE 3000
 
