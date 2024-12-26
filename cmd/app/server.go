@@ -3,27 +3,30 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/SergioMorenoAntequera/Go-HTTP-Server-Template/api/handlers"
+	"github.com/SergioMorenoAntequera/Go-HTTP-Server-Template/api/middlewares"
 )
 
 type Server struct {
 	port       int
-	router     EndpointHandler
-	middlwares []midleware
+	router     handlers.EndpointHandler
+	middlwares []middlewares.Midleware
 }
 
 func NewServer(port int) *Server {
 	return &Server{
 		port:       port,
-		router:     EndpointHandler{},
-		middlwares: []midleware{},
+		router:     handlers.EndpointHandler{},
+		middlwares: []middlewares.Midleware{},
 	}
 }
 
-func (s *Server) AddMiddleware(newMidleware midleware) {
+func (s *Server) AddMiddleware(newMidleware middlewares.Midleware) {
 	s.middlwares = append(s.middlwares, newMidleware)
 }
 
-func (s *Server) AddRouter(endpoint string, endpointHandler EndpointHandler) {
+func (s *Server) AddRouter(endpoint string, endpointHandler handlers.EndpointHandler) {
 
 	var functionality = func(w http.ResponseWriter, r *http.Request) {
 		endpointHandler[r.Method](w, r)
