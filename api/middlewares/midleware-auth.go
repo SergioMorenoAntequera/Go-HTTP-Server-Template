@@ -8,8 +8,7 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request) (bool, http.Response
 	hasApiKey := apikey != ""
 
 	if !hasApiKey {
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Unauthorized!"))
+		http.Error(w, "Unauthorized!", http.StatusUnauthorized)
 		return false, nil, nil
 	}
 

@@ -10,14 +10,14 @@ import (
 
 type Server struct {
 	port       int
-	router     handlers.EndpointHandler
+	handlers   handlers.EndpointHandler
 	middlwares []middlewares.Midleware
 }
 
 func NewServer(port int) *Server {
 	return &Server{
 		port:       port,
-		router:     handlers.EndpointHandler{},
+		handlers:   handlers.EndpointHandler{},
 		middlwares: []middlewares.Midleware{},
 	}
 }
@@ -26,20 +26,12 @@ func (s *Server) AddMiddleware(newMidleware middlewares.Midleware) {
 	s.middlwares = append(s.middlwares, newMidleware)
 }
 
-func (s *Server) AddRouter(endpoint string, endpointHandler handlers.EndpointHandler) {
+func (s *Server) AddHandler(endpoint string, endpointHandler handlers.EndpointHandler) {
 
-	var functionality = func(w http.ResponseWriter, r *http.Request) {
-		endpointHandler[r.Method](w, r)
-	}
+	http.HandleFunc(endpoint, func(w http.ResponseWriter, r *http.Request) {
 
-	s.router[endpoint] = functionality
-}
+		if handler, found := endpointHandler[r.Method]; found {
 
-func (s *Server) Listen() {
-
-	for endpoint, endpointHandler := range s.router {
-
-		var fullHandler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 			newW := w
 			newR := r
 
@@ -52,16 +44,19 @@ func (s *Server) Listen() {
 				}
 			}
 
-			endpointHandler(w, r)
+			handler(w, r)
+		} else {
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
 
-		http.Handle(endpoint, fullHandler)
-	}
+	})
+}
+
+func (s *Server) Listen() {
 
 	fmt.Printf("\n SERVER LISTENING IN: %d \n\n", s.port)
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
-	if err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil); err != nil {
 		panic(err.Error())
 	}
 }
