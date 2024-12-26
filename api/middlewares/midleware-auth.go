@@ -1,4 +1,4 @@
-package main
+package middlewares
 
 import "net/http"
 
@@ -8,7 +8,7 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request) (bool, http.Response
 	hasApiKey := apikey != ""
 
 	if !hasApiKey {
-		w.WriteHeader(http.StatusUnauthorized)
+		http.Error(w, "Unauthorized!", http.StatusUnauthorized)
 		return false, nil, nil
 	}
 
