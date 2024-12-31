@@ -1,12 +1,12 @@
+# go_http_server_template:latest
 FROM golang:latest
 
+RUN apt-get update && apt-get install -y postgresql-client
+
 WORKDIR /app 
-
-COPY . /app
-
-CMD ["go", "run", "./cmd/app"]
-
+COPY . .
 EXPOSE 3000
 
-# ENV ENV_VAR=ohye
+RUN go mod tidy
 
+CMD ["go", "run", "./cmd/app"]

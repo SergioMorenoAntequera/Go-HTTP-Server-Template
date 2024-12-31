@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -10,14 +10,12 @@ import (
 
 type Server struct {
 	port       int
-	handlers   handlers.EndpointHandler
 	middlwares []middlewares.Midleware
 }
 
 func NewServer(port int) *Server {
 	return &Server{
 		port:       port,
-		handlers:   handlers.EndpointHandler{},
 		middlwares: []middlewares.Midleware{},
 	}
 }
