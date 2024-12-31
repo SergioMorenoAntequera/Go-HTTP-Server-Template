@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const MainEndpoint = "/main"
+const MainEndpoint = "/"
 
 var MainEndpointHandler = EndpointHandler{
 	"GET": func(w http.ResponseWriter, r *http.Request) {
