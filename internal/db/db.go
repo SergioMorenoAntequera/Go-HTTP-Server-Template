@@ -10,7 +10,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Connect() {
+func Connect() *pgx.Conn {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -24,12 +25,18 @@ func Connect() {
 	)
 
 	fmt.Println("⌛️ Connecting to:", DB_URL)
+
 	conn, err := pgx.Connect(context.Background(), DB_URL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
+
 	fmt.Println("✨ Connected successfully!")
 
-	defer conn.Close(context.Background())
+	return conn
+}
+
+func Disconnect(conn *pgx.Conn) {
+	conn.Close(context.Background())
 }

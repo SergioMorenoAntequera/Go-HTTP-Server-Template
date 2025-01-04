@@ -1,6 +1,6 @@
 module github.com/SergioMorenoAntequera/Go-HTTP-Server-Template
 
-go 1.20
+go 1.23.4
 
 require (
 	github.com/jackc/pgx/v5 v5.7.2
