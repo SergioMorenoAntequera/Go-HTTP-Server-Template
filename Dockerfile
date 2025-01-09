@@ -1,14 +1,12 @@
-FROM go-base:latest
+# go_http_server_template:latest
+FROM golang:latest
+
+RUN apt-get update && apt-get install -y postgresql-client
 
 WORKDIR /app 
-
-COPY . /app
-
-RUN go build
-
-CMD ["go", "run", "seran.dev"]
-
+COPY . .
 EXPOSE 3000
 
-# ENV ENV_VAR=ohye
+RUN go mod tidy
 
+CMD ["go", "run", "./cmd/app"]

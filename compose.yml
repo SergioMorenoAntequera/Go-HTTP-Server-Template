@@ -1,0 +1,31 @@
+
+services:
+  
+  db:
+    image: postgres:latest
+    container_name: db_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    image: go_http_server_template:latest
+    container_name: go_http_server_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_PORT=5432
+    env_file:
+      - .env
+    depends_on:
+      - db
+  
+volumes:
+  db_data:

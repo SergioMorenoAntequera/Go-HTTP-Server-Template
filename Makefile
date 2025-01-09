@@ -1,8 +1,8 @@
 
-build:
-	go build
-
 run:
-	go run .
+	go run ./cmd/app
 
-all: build run
+docker:
+	docker-compose up --build
+
+all: run
