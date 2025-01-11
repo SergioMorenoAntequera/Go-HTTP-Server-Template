@@ -10,7 +10,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Connect() *pgx.Conn {
+var DB *pgx.Conn
+
+func Connect() {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -34,9 +36,10 @@ func Connect() *pgx.Conn {
 
 	fmt.Println("✨ Connected successfully!")
 
-	return conn
+	DB = conn
 }
 
-func Disconnect(conn *pgx.Conn) {
-	conn.Close(context.Background())
+func Disconnect() {
+	DB.Close(context.Background())
+	DB = nil
 }
