@@ -25,7 +25,7 @@ type IModel interface {
 func main() {
 	// db.Connect()
 
-	user := models.NewUser("Pedrito")
+	user := models.NewUser("Pedrito", 4)
 	models.Create(user)
 
 	/*

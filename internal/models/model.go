@@ -3,32 +3,42 @@ package models
 import (
 	"fmt"
 	"reflect"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type Model struct {
-	id         string
 	_modelName string
-	updatedAt  time.Time
-	createdAt  time.Time
+	Id         string
+	UpdatedAt  time.Time
+	CreatedAt  time.Time
 }
 
 func (m *Model) Init(modelName string) {
 	m._modelName = modelName
-	m.updatedAt = time.Now()
-	if (m.createdAt == time.Time{}) {
-		m.createdAt = time.Now()
+	m.UpdatedAt = time.Now()
+	if (m.CreatedAt == time.Time{}) {
+		m.CreatedAt = time.Now()
 	}
+
 }
 
 type ModelBreakdown struct {
 	typeGo string
 	name   string
-	value  any
+	value  string
 }
 
-func extractAttributes(model interface{}) []ModelBreakdown {
+var TYPE_TO_STRING_CONVERTION = map[string]func(value reflect.Value) string{
+	"int":  func(value reflect.Value) string { return strconv.FormatInt(value.Int(), 10) },
+	"Time": func(value reflect.Value) string { return value.Interface().(time.Time).Format("2006-01-02") },
+}
+
+var TYPES_WITH_QUOTES = []string{"string", "Time"}
+
+func extractAttributes(model any) []ModelBreakdown {
 	keys := []ModelBreakdown{}
 
 	baseType := reflect.Indirect(reflect.ValueOf(model))
@@ -52,10 +62,20 @@ func extractAttributes(model interface{}) []ModelBreakdown {
 		}
 
 		if attribute.Type.String() != "models.Model" {
+
+			var convertedType string
+			converter, found := TYPE_TO_STRING_CONVERTION[attribute.Type.Name()]
+			if found {
+				convertedType = converter(attributeValue)
+			}
+			if !found {
+				convertedType = attributeValue.String()
+			}
+
 			keys = append(keys, ModelBreakdown{
 				typeGo: attribute.Type.Name(),
 				name:   attribute.Name,
-				value:  attributeValue,
+				value:  convertedType,
 			})
 		}
 
@@ -64,12 +84,13 @@ func extractAttributes(model interface{}) []ModelBreakdown {
 	return keys
 }
 
-func Create(m interface{}) {
-
-	insertQueryHeader := "INSERT INTO " + " ("
-	insertQueryFooter := "VALUES ("
+func Create(m any) {
 
 	attributes := extractAttributes(m)
+	modelName := slices.IndexFunc(attributes, func(a ModelBreakdown) bool { return a.name == "_modelName" })
+
+	insertQueryHeader := "INSERT INTO " + attributes[modelName].value + " ("
+	insertQueryFooter := "VALUES ("
 
 	for i, attribute := range attributes {
 
@@ -77,12 +98,21 @@ func Create(m interface{}) {
 			continue
 		}
 
+		var usesQuotes = slices.IndexFunc(TYPES_WITH_QUOTES, func(a string) bool { return a == attribute.typeGo }) != -1
+		if !usesQuotes {
+			insertQueryFooter += attribute.value
+		} else {
+			insertQueryFooter += "'" + attribute.value + "'"
+		}
 		insertQueryHeader += attribute.name
+
 		if i != len(attributes)-1 {
 			insertQueryHeader += ", "
+			insertQueryFooter += ", "
 		}
 		if i == len(attributes)-1 {
 			insertQueryHeader += ")"
+			insertQueryFooter += ");"
 		}
 	}
 
